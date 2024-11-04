@@ -1,0 +1,162 @@
+/* Home.css */
+.home-container {
+    font-family: 'Georgia', serif;
+    background-image: url('../photos/parchment.avif');
+   
+        width: 100%; /* Full width */
+        margin: 0; /* Remove auto margins */
+         /* Optional max width */
+        padding: 0 20px; /* Inner spacing */
+    
+    
+}
+
+.hero-section {
+    background-image: url('../photos/librarybg.avif'); /* Set your parchment image */
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    padding: 60px 20px;
+    color: #C78C06; /* Dark text for contrast */
+    animation: fadeIn 1s ease-in-out;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
+    display: flex;
+
+}
+
+.hero-overlay {
+    background-color: rgba(7, 25, 50, 0.6); /* Dark overlay for readability */
+    padding: 20px;
+    border-radius: 10px; /* Rounded corners for modern feel */
+    text-align: center;
+    
+}
+
+.explore-button {
+    background-color: #c78c06; /* Gold background */
+    color: #071932; /* Dark text */
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    font-size: 1rem;
+}
+
+.explore-button:hover {
+    background-color: #a36b04; /* Darker gold on hover */
+    transform: scale(1.05); /* Slightly larger on hover */
+}
+
+.promo-section {
+    padding: 40px 20px;
+    border-top: 1px solid rgba(7, 25, 50); /* Grey separator */
+    border-bottom: 1px solid rgba(7, 25, 50); /* Grey separator */
+}
+
+.book-section {
+    padding: 40px 20px;
+    border-top: 1px solid rgba(7, 25, 50); /* Grey separator */
+    border-bottom: 1px solid rgba(7, 25, 50); /* Grey separator */
+}
+
+.book-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Responsive grid */
+    gap: 20px; /* Space between cards */
+}
+
+.no-books {
+    text-align: center;
+}
+
+.testimonials-section {
+    padding: 40px 20px;
+     /* Light background */
+    border-top: 1px solid rgba(7, 25, 50); /* Grey separator */
+    border-bottom: 1px solid rgba(7, 25, 50); /* Grey separator */
+    animation: slideIn 1s ease-in-out; /* Animation when in view */
+}
+
+.testimonials-container {
+    display: flex;
+    flex-direction: column; /* Stack testimonials vertically */
+    gap: 15px; /* Space between testimonials */
+}
+
+.testimonial-card {
+    background-color: #ffffff49;
+    padding: 20px;
+    border-radius: 5px; /* Rounded corners */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.about-section {
+    padding: 40px 20px;
+    border-top: 1px solid rgba(7, 25, 50); /* Grey separator */
+}
+
+.footer {
+    text-align: center;
+    padding: 20px 0;
+    background-color: rgba(199, 140, 6, 0.3);  /* Light gold background */
+}
+
+
+.search-filter-section {
+    display: flex;
+    justify-content: center; /* Center align the search bar and filters */
+    margin-top: 20px; /* Space between the text and filters */
+    gap: 10px; /* Space between input elements */
+}
+
+.search-input {
+    padding: 10px;
+    border-radius: 4px;
+    border: none;
+    width: 300px; /* Adjust width as needed */
+}
+
+.genre-filter,
+.sort-options {
+    padding: 10px;
+    border-radius: 4px;
+    border: none;
+}
+
+/* Styles for the tag filters */
+.tag-filters {
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between tags */
+}
+
+/* Styles for tag checkboxes */
+.tag-filters label {
+    display: flex;
+    align-items: center;
+    gap: 5px; /* Space between checkbox and label */
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

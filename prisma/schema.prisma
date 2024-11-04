@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Author { 
+  id    Int     @id @default(autoincrement())
+  name  String  @unique(map: "Author_name_key") // Unique name for authors
+  books Book[]  @relation("bookauthors") // Relationship with books
+}
+
+model Book {
+  id            Int        @id @default(autoincrement())
+  title         String     // Title of the book
+  description   String     // Description of the book
+  price         Float      // Price of the book
+  genre         String?    // Genre of the book (optional)
+  publisher     String?    // Publisher of the book (optional)
+  averageRating Float      @default(0) // Average rating of the book
+  uploadDate    DateTime   @default(now()) // Date when the book was uploaded
+  purchases     Purchase[] // Relationship with purchases
+  ratings       Rating[]   @relation("BookRatings") // Relationship with ratings
+  authors       Author[]   @relation("bookauthors") // Authors of the book
+  tags          Tag[]      @relation("booktags") // Tags associated with the book
+  thumbnail     String?    // Path to thumbnail image (optional)
+  pdf           String?    // Path to PDF file (optional)
+  users         User[]     @relation("UserBooks") // Relationship with users (purchasers of the book)
+  sales         Sale[]     @relation("BookSales") // Relationship with sales
+  cartItems     CartItem[] // Relationship with CartItem
+}
+
+model Purchase {
+  id        Int      @id @default(autoincrement())
+  date      DateTime @default(now())
+  bookId    Int
+  userId    Int
+  status    String   @default("completed")
+  sessionId String
+  quantity  Int      // Number of items purchased
+  book      Book     @relation(fields: [bookId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+
+model Rating {
+  id       Int      @id @default(autoincrement())
+  rating   Int      // Rating value (ensure validation in application logic)
+  bookId   Int
+  userId   Int
+  book     Book     @relation("BookRatings", fields: [bookId], references: [id]) // Relationship with book
+  user     User     @relation(fields: [userId], references: [id]) // Relationship with user
+}
+
+model Tag {
+  id   Int      @id @default(autoincrement())
+  name String   @unique(map: "Tag_name_key") // Unique name for tags
+  books Book[]  @relation("booktags") // Relationship with books
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  email     String     @unique(map: "User_email_key") // Unique email for users
+  password  String     // Password for user authentication
+  role      String     @default("user") // Role of the user (default is user)
+  purchases Purchase[] // Relationship with purchases
+  ratings   Rating[]   // Relationship with ratings
+  books     Book[]     @relation("UserBooks") // Relationship with books (purchased books)
+  sales     Sale[]     @relation("UserSales") // Relationship with sales
+  cart      Cart?      // One-to-one relationship with Cart
+}
+
+model Sale {
+  id        Int      @id @default(autoincrement())
+  date      DateTime @default(now()) // Date of the sale
+  bookId    Int
+  userId    Int
+  amount    Float    // Stores the sale amount
+  book      Book     @relation("BookSales", fields: [bookId], references: [id]) // Relationship with book
+  user      User     @relation("UserSales", fields: [userId], references: [id]) // Relationship with user
+}
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @unique // Each user should have only one active cart
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[] // Relationship with cart items
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  cartId    Int
+  bookId    Int
+  quantity  Int      // Quantity of the book in the cart
+  cart      Cart     @relation(fields: [cartId], references: [id]) // Relationship with cart
+  book      Book     @relation(fields: [bookId], references: [id]) // Relationship with book
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

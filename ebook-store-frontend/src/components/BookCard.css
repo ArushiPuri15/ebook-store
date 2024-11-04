@@ -1,0 +1,81 @@
+/* BookCard.css */
+.book-card {
+    background-color: #ffffff; /* White background for contrast */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    overflow: hidden; /* Prevent overflow of content */
+    transition: transform 0.2s, box-shadow 0.2s; /* Smooth transition for hover effects */
+    margin: 15px; /* Margin for spacing between cards */
+    max-width: 250px; /* Set max width for the card */
+    cursor: pointer; /* Pointer cursor for interaction */
+}
+
+.book-card:hover {
+    transform: translateY(-5px); /* Lift effect on hover */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Increase shadow on hover */
+}
+
+.book-thumbnail {
+    width: 100%; /* Full width thumbnail */
+    height: auto; /* Maintain aspect ratio */
+    border-bottom: 2px solid #f0f0f0; /* Subtle border below the thumbnail */
+}
+
+.book-info {
+    padding: 15px; /* Padding for the info section */
+}
+
+.book-title {
+    font-size: 1.2em; /* Slightly larger font size */
+    color: #333333; /* Dark text color for title */
+    margin: 0 0 5px 0; /* Margin to separate title from other text */
+    font-weight: 600; /* Bold title */
+}
+
+.book-description {
+    font-size: 0.9em; /* Slightly smaller font size */
+    color: #666666; /* Lighter gray for description */
+    margin-bottom: 10px; /* Space below the description */
+}
+
+.book-price {
+    font-size: 1.1em; /* Price size */
+    color: #4CAF50; /* Green color for price */
+    font-weight: bold; /* Bold price */
+}
+
+.book-genre {
+    font-size: 0.8em; /* Smaller font for genre */
+    color: #999999; /* Gray for genre text */
+    text-transform: uppercase; /* Uppercase for genre */
+    margin-top: 5px; /* Space above genre */
+}
+
+.add-to-cart {
+    background-color: transparent; /* Transparent background for button */
+    border: none; /* Remove border */
+    color: #4CAF50; /* Green color for the icon */
+    cursor: pointer; /* Pointer cursor */
+    font-size: 1.2em; /* Size for the icon */
+    margin-top: 10px; /* Space above the button */
+}
+
+.add-to-cart:hover {
+    color: #388E3C; /* Darker green on hover */
+}
+
+/* Add to the parent container that holds all book cards */
+.book-card-container {
+    display: flex;
+    flex-wrap: wrap; /* Allow cards to wrap onto the next line */
+    justify-content: space-around; /* Space between cards */
+    padding: 20px; /* Padding for the container */
+}
+
+/* Media Queries for Responsive Design */
+@media (max-width: 600px) {
+    .book-card {
+        max-width: 100%; /* Full width on small screens */
+        margin: 10px; /* Less margin */
+    }
+}

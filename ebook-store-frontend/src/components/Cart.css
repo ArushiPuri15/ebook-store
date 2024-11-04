@@ -1,0 +1,83 @@
+/* Cart.css */
+
+.cart {
+    max-width: 800px; /* Limit the width of the cart */
+    margin: 20px auto; /* Center the cart on the page */
+    padding: 20px;
+    background-color: #f9f9f9; /* Light background for the cart */
+    border: 1px solid #ccc; /* Light border */
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #ddd; /* Divider line */
+    padding-bottom: 10px;
+}
+
+.cart-header h2 {
+    margin: 0; /* Remove default margin */
+}
+
+.cart-items {
+    margin-top: 20px; /* Space above items */
+}
+
+.cart-item {
+    display: flex;
+    justify-content: space-between; /* Align items */
+    align-items: center;
+    padding: 10px 0; /* Vertical padding */
+    border-bottom: 1px solid #ddd; /* Divider between items */
+}
+
+.cart-item img {
+    width: 50px; /* Thumbnail size */
+    height: auto; /* Maintain aspect ratio */
+    border-radius: 4px; /* Slight rounding for images */
+}
+
+.cart-item-info {
+    flex-grow: 1; /* Allow this section to grow */
+    margin-left: 10px; /* Space between image and text */
+}
+
+.cart-item-title {
+    font-weight: bold; /* Bold title */
+}
+
+.cart-item-price {
+    font-weight: bold; /* Bold price */
+}
+
+.remove-button {
+    background-color: transparent; /* Transparent background */
+    color: red; /* Red color for remove */
+    border: none; /* No border */
+    cursor: pointer; /* Pointer cursor */
+    font-weight: bold; /* Bold text */
+}
+
+.total {
+    margin-top: 20px; /* Space above total */
+    font-weight: bold; /* Bold text */
+    font-size: 1.2em; /* Larger text */
+}
+
+.checkout-button {
+    background-color: #007bff; /* Primary color */
+    color: white; /* White text */
+    border: none; /* No border */
+    padding: 10px 20px; /* Padding */
+    border-radius: 5px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor */
+    font-size: 1em; /* Font size */
+    margin-top: 20px; /* Space above button */
+}
+
+.checkout-button:hover {
+    background-color: #0056b3; /* Darker on hover */
+}
