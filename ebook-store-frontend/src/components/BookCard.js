@@ -12,8 +12,8 @@ const BookCard = ({ book }) => {
         navigate(`/books/${book.id}`);
     }
 
-    // Construct the thumbnail URL based on the server's base path
-    const thumbnailUrl = `http://localhost:5000/uploads/${book.thumbnail}`;
+    // Construct the thumbnail URL based on the server's base path from environment variable
+    const thumbnailUrl = `${process.env.REACT_APP_API_BASE_URL}/${book.thumbnail}`;
 
     return (
         <div className="book-card">
@@ -47,5 +47,6 @@ const BookCard = ({ book }) => {
         </div>
     );
 };
+
 
 export default BookCard;

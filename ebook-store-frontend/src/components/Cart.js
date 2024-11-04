@@ -4,56 +4,46 @@ import { useStripe } from '@stripe/react-stripe-js';
 import axios from 'axios';
 
 const Cart = () => {
-    const { cartItems, setCartItems, removeFromCart, totalAmount } = useCart();
+    const { cartItems, setCartItems, removeFromCart, totalAmount, error } = useCart();
     const stripe = useStripe();
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
 
     useEffect(() => {
         const fetchCart = async () => {
             const token = localStorage.getItem('token');
-    
+
             if (!token) {
                 console.warn("Token is missing. Cannot fetch cart items.");
                 return;
             }
-    
+
             try {
                 const response = await axios.get('http://localhost:5000/cart', {
                     headers: { 'Authorization': `Bearer ${token}` },
                 });
-    
+
                 if (Array.isArray(response.data)) {
-                    console.log("Setting cart items to:", response.data); // Log fetched items
-                    setCartItems(response.data); // Only set items if the response is an array
+                    setCartItems(response.data);
                 } else {
                     console.warn("Unexpected response format:", response.data);
-                    setCartItems([]); // Fallback to empty array
+                    setCartItems([]);
                 }
             } catch (error) {
                 console.error("Error fetching cart items:", error);
-                setError("Failed to fetch cart items. Please try again later.");
             }
         };
-    
+
         fetchCart();
     }, [setCartItems]);
-    
-    
-        
-
-       
 
     const handleCheckout = async () => {
         setLoading(true);
-        setError(''); // Reset any previous error
-        const token = localStorage.getItem('token'); // Get the token from local storage
 
+        const token = localStorage.getItem('token');
         try {
-            // Prepare items for checkout
             const checkoutItems = cartItems.map(item => ({
-                bookId: item.book.id, // Ensure book ID is used correctly
-                quantity: item.quantity || 1, // Default to 1 if quantity is undefined
+                bookId: item.book.id,
+                quantity: item.quantity || 1,
             }));
 
             const response = await axios.post(
@@ -61,30 +51,25 @@ const Cart = () => {
                 { items: checkoutItems },
                 {
                     headers: {
-                        'Authorization': `Bearer ${token}` // Include the token here
+                        'Authorization': `Bearer ${token}`
                     }
                 }
             );
 
-            const sessionId = response.data.sessionId; // Ensure this matches your backend response
+            const sessionId = response.data.sessionId;
 
-            // Redirect to Stripe checkout
             const result = await stripe.redirectToCheckout({ sessionId });
             if (result.error) {
-                setError(result.error.message);
+                console.error(result.error.message);
             } else {
-                // Clear cart after successful checkout
                 setCartItems([]);
             }
         } catch (error) {
             console.error("Error initiating checkout:", error);
-            setError("Failed to initiate checkout. Please try again.");
         } finally {
             setLoading(false);
         }
     };
-
-    console.log("Cart Items:", cartItems); // Log current cart items for debugging
 
     return (
         <div className="cart">
@@ -116,8 +101,6 @@ const Cart = () => {
             )}
         </div>
     );
-    
-}
-
+};
 
 export default Cart;

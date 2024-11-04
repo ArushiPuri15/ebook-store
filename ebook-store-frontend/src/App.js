@@ -4,7 +4,7 @@ import { CartProvider } from './hooks/useCart';
 import Home from './pages/Home';
 import Navbar from './components/Navbar';
 import BookDetail from './pages/BookDetail';
-import MyBooks from './pages/MyBooks';
+import MyBooks from './pages/MyBooksPage';
 import AdminDashboard from './pages/AdminDashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import AuthPage from './pages/AuthPage';

@@ -15,45 +15,49 @@ model Author {
 
 model Book {
   id            Int        @id @default(autoincrement())
-  title         String     // Title of the book
-  description   String     // Description of the book
-  price         Float      // Price of the book
-  genre         String?    // Genre of the book (optional)
-  publisher     String?    // Publisher of the book (optional)
-  averageRating Float      @default(0) // Average rating of the book
-  uploadDate    DateTime   @default(now()) // Date when the book was uploaded
-  purchases     Purchase[] // Relationship with purchases
-  ratings       Rating[]   @relation("BookRatings") // Relationship with ratings
-  authors       Author[]   @relation("bookauthors") // Authors of the book
-  tags          Tag[]      @relation("booktags") // Tags associated with the book
-  thumbnail     String?    // Path to thumbnail image (optional)
-  pdf           String?    // Path to PDF file (optional)
-  users         User[]     @relation("UserBooks") // Relationship with users (purchasers of the book)
-  sales         Sale[]     @relation("BookSales") // Relationship with sales
-  cartItems     CartItem[] // Relationship with CartItem
+  title         String
+  description   String
+  price         Float
+  genre         String?
+  publisher     String?
+  averageRating Float      @default(0)
+  uploadDate    DateTime   @default(now())
+  purchases     Purchase[]
+  ratings       Rating[]   @relation("BookRatings")
+  authors       Author[]   @relation("bookauthors")
+  tags          Tag[]      @relation("booktags")
+  thumbnail     String?
+  pdf           String?    // Re-add the pdf column if it should remain
+  users         User[]     @relation("UserBooks")
+  sales         Sale[]     @relation("BookSales")
+  cartItems     CartItem[]
 }
+
 
 model Purchase {
-  id        Int      @id @default(autoincrement())
-  date      DateTime @default(now())
-  bookId    Int
-  userId    Int
-  status    String   @default("completed")
-  sessionId String
-  quantity  Int      // Number of items purchased
-  book      Book     @relation(fields: [bookId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  id            Int      @id @default(autoincrement())
+  date          DateTime @default(now())
+  bookId        Int
+  userId        Int
+  status        String   @default("completed")
+  sessionId     String
+  quantity      Int      // Number of items purchased
+  amount        Float    @default(0.0) // Temporarily set a default value
+  transactionId String   @default("temp") // Temporarily set a default value
+  book          Book     @relation(fields: [bookId], references: [id])
+  user          User     @relation(fields: [userId], references: [id])
 }
-
 
 model Rating {
   id       Int      @id @default(autoincrement())
-  rating   Int      // Rating value (ensure validation in application logic)
+  rating   Int      // Rating value (should be validated in application logic to be between 1 and 5)
   bookId   Int
   userId   Int
+  createdAt DateTime @default(now()) // Date of rating
   book     Book     @relation("BookRatings", fields: [bookId], references: [id]) // Relationship with book
   user     User     @relation(fields: [userId], references: [id]) // Relationship with user
 }
+
 
 model Tag {
   id   Int      @id @default(autoincrement())

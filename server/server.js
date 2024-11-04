@@ -9,6 +9,8 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const path = require('path');
+const axios = require('axios');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 let prisma;
@@ -28,7 +30,7 @@ app.use(cors({
 }));
 
 // Serve static files from the uploads directory
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 const upload = multer({
     storage: multer.diskStorage({
@@ -75,6 +77,20 @@ const verifyToken = (req, res, next) => {
         console.error("Token verification failed:", err);
         return res.status(403).send("Invalid Token");
     }
+};
+const apiKey = process.env.GEMINI_API_KEY;
+const genAI = new GoogleGenerativeAI(apiKey);
+const model = genAI.getGenerativeModel({
+    model: "gemini-1.5-flash",
+});
+
+// Define generation configuration
+const generationConfig = {
+    temperature: 1,
+    topP: 0.95,
+    topK: 40,
+    maxOutputTokens: 8192,
+    responseMimeType: "text/plain",
 };
 
 // Webhook endpoint for Stripe
@@ -474,7 +490,60 @@ app.delete('/books/:id', verifyToken, async (req, res) => {
     }
 });
 
-// Add a rating
+// Endpoint to get the user's purchased books
+// Endpoint to get the user's purchased books
+app.get('/users/mybooks', verifyToken, async (req, res) => {
+    try {
+        // Find all purchases made by the user
+        const purchases = await prisma.purchase.findMany({
+            where: { userId: req.user.id, status: 'completed' }, // Ensure only completed purchases are retrieved
+            include: {
+                book: {
+                    include: {
+                        ratings: true, // Include ratings for the book
+                    },
+                },
+            },
+        });
+
+        // If no purchases found, respond accordingly
+        if (!purchases.length) {
+            return res.status(404).json({ message: 'No purchased books found.' });
+        }
+
+        // Map the results to include relevant book information
+        const books = purchases.map(purchase => {
+            const book = purchase.book;
+
+            // Check if book exists and safely access its properties
+            if (!book) {
+                return null; // Handle case if book does not exist
+            }
+
+            // Find the user's rating for this book, if it exists
+            const userRating = book.ratings.find(rating => rating.userId === req.user.id)?.rating || null;
+
+            return {
+                id: book.id,
+                title: book.title,
+                description: book.description,
+                userRating, // User's rating for this book
+                averageRating: book.averageRating || 0, // Provide a default value for average rating if undefined
+                purchaseDate: purchase.createdAt, // Include the date of purchase if needed
+                pdf: book.pdf, // Include the PDF path
+                // Add any other book fields you want to expose
+            };
+        }).filter(Boolean); // Remove any null entries if a book was not found
+
+        return res.json({ books });
+    } catch (error) {
+        console.error("Error fetching user's books:", error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
+
+// Add a rating or update an existing one
 app.post(
     '/ratings',
     [
@@ -489,21 +558,68 @@ app.post(
         }
 
         const { bookId, rating } = req.body;
+
         try {
-            const newRating = await prisma.rating.create({
-                data: {
+            // Check if the user has purchased the book
+            const purchase = await prisma.purchase.findFirst({
+                where: {
+                    bookId: bookId,
                     userId: req.user.id,
-                    bookId,
-                    rating,
+                    status: 'completed', // Ensure only completed purchases are considered
                 },
             });
-            res.status(201).json(newRating);
+
+            if (!purchase) {
+                return res.status(403).json({ error: "You can only rate books that you've purchased." });
+            }
+
+            // Check if a rating already exists for this user and book
+            const existingRating = await prisma.rating.findFirst({
+                where: {
+                    bookId,
+                    userId: req.user.id,
+                },
+            });
+
+            if (existingRating) {
+                // Update the existing rating
+                const updatedRating = await prisma.rating.update({
+                    where: { id: existingRating.id },
+                    data: { rating },
+                });
+                return res.status(200).json(updatedRating);
+            } else {
+                // Create a new rating
+                const newRating = await prisma.rating.create({
+                    data: {
+                        userId: req.user.id,
+                        bookId,
+                        rating,
+                    },
+                });
+                return res.status(201).json(newRating);
+            }
         } catch (error) {
-            console.error("Error adding rating:", error);
-            res.status(500).send("Error adding rating");
+            console.error("Error adding/updating rating:", error);
+            res.status(500).send("Error adding/updating rating");
         }
     }
 );
+
+// Optional: Add a route to fetch ratings for a specific book
+app.get('/ratings/:bookId', async (req, res) => {
+    const { bookId } = req.params;
+    try {
+        const ratings = await prismaClient.rating.findMany({
+            where: { bookId: parseInt(bookId) },
+            select: { rating: true, userId: true },
+        });
+        res.status(200).json(ratings);
+    } catch (error) {
+        console.error("Error fetching ratings:", error);
+        res.status(500).send("Error fetching ratings");
+    }
+});
 
 
 
@@ -587,7 +703,7 @@ app.post('/purchase', async (req, res) => {
                 sessionId: sessionId, // Session ID from Stripe
                 quantity: parseInt(quantity), // Quantity of the book purchased
                 status: "completed", // You might want to set this based on the payment status
-                // Include any other relevant purchase data if needed
+                date: new Date(),// Include any other relevant purchase data if needed
             }
         });
 
@@ -775,6 +891,90 @@ app.post('/cart', verifyToken, async (req, res) => {
     } catch (error) {
         console.error("Error adding item to cart:", error);
         res.status(500).send("Internal Server Error");
+    }
+});
+
+// Route to fetch user's purchase history
+app.get('/users/me/purchases', verifyToken, async (req, res) => {
+    const userId = req.user.id; // Assuming req.user.id is set by the verifyToken middleware
+
+    try {
+        const purchases = await prisma.purchase.findMany({
+            where: { userId: userId, status: 'completed' }, // Ensure we only get completed purchases
+            include: {
+                book: true, // Include book details in the response
+            },
+            orderBy: {
+                createdAt: 'desc', // Order by purchase date (assuming createdAt is a timestamp field)
+            },
+        });
+
+        res.json(purchases); // Send the purchases back to the client
+    } catch (error) {
+        console.error("Error fetching user's purchase history:", error);
+        res.status(500).send("Error fetching purchase history");
+    }
+});
+
+
+// Route to fetch a book's content if the user has purchased it
+app.get('/books/:bookId/read', verifyToken, async (req, res) => {
+    const { bookId } = req.params;
+
+    try {
+        // Check if the user has purchased the book
+        const purchase = await prisma.purchase.findFirst({
+            where: {
+                bookId: parseInt(bookId),
+                userId: req.user.id,
+                status: 'completed'
+            }
+        });
+
+        if (!purchase) {
+            return res.status(403).json({ message: 'Access Denied: You have not purchased this book.' });
+        }
+
+        // If the user has purchased the book, send the book's PDF URL or content
+        const book = await prisma.book.findUnique({
+            where: { id: parseInt(bookId) },
+            select: { pdf: true, title: true } // Only select the pdf field and title
+        });
+
+        if (!book || !book.pdf) {
+            return res.status(404).json({ message: 'Book not found or does not have a PDF.' });
+        }
+
+        // Return the PDF URL or content (depending on your requirements)
+        res.json({ title: book.title, pdfUrl: book.pdf });
+    } catch (error) {
+        console.error("Error fetching book content:", error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
+app.post('/chatbot', async (req, res) => {
+    const { message } = req.body;
+    try {
+        const chatSession = model.startChat({
+            generationConfig: {
+                temperature: 1,
+                topP: 0.95,
+                topK: 40,
+                maxOutputTokens: 8192,
+                responseMimeType: "text/plain",
+            },
+            history: [],
+        });
+
+        const result = await chatSession.sendMessage(message);
+
+        // Make sure to check the response structure and send back the appropriate text
+        res.json({ response: result.response.text() }); // Use text() if response is a function
+    } catch (error) {
+        console.error("Error communicating with Gemini API:", error.message);
+        console.error(error.stack);
+        res.status(500).send("Error communicating with chatbot");
     }
 });
 

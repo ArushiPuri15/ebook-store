@@ -72,9 +72,8 @@ export const confirmPayment = async (sessionId) => {
     }
 };
 
-// Additional functions for rating, managing books, etc., can be added here as needed.
-
-export default {
+// Create an object to hold all the exported functions
+const api = {
     fetchBooks,
     fetchBookById,
     signup,
@@ -82,3 +81,6 @@ export default {
     initiateCheckout,
     confirmPayment,
 };
+
+// Export the api object as the default export
+export default api;
